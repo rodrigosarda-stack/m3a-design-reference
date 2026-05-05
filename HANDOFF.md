@@ -131,10 +131,83 @@ npm run dev   # http://localhost:3000
 
 ## 5. Como abordar a tarefa
 
-### Etapa 1 — Estude o design e reconcile com o handoff
-1. Abra a URL de referência no seu navegador MCP
-2. Tire screenshots das telas que conseguir alcançar (clique em runs, médicos, workspace, etc)
-3. **Clone também o repo do design** e leia:
+### Etapa 0 — Mapeamento exaustivo do design (anote enquanto explora)
+
+**Antes de qualquer leitura de código ou reconciliação**, faça um varredura completa do protótipo navegando como um usuário faria, anotando tudo que encontrar. O design tem muito conteúdo escondido por interação — telas que só aparecem ao clicar, componentes que só aparecem em estados específicos, controles que mudam toda a paleta. Se você pular essa etapa, vai planejar a reconciliação baseado em ~30% do que existe.
+
+**Método: olhada geral → aprofundamento por camadas → inventário progressivo.**
+
+1. **Carregue a página inicial** e tire screenshot. Anote o que vê (header, lista principal, layout geral).
+
+2. **Inventário de navegação** — clique sistematicamente em **todo elemento aparentemente clicável** (links no header, botões, rows de tabela, cards, ícones). Pra cada um:
+   - Screenshot do destino
+   - Anota o trigger ("clicar no card do médico Marina")
+   - Anota o que mudou
+   - Volta e segue pro próximo
+
+3. **Inventário de estados** — em cada tela que tem filtros/tabs/seletores (ex: status das runs, modos do workspace, médico ativo no header), itere por cada valor possível. Screenshot + anotação do que muda.
+
+4. **Inventário de componentes condicionais** — coisas que só aparecem em situações específicas:
+   - Selection bubble (selecione texto no script)
+   - Action log com undo (faça uma ação)
+   - Tweaks panel (botão Sparkle)
+   - Status pulsante de "running"
+   - Modais, dropdowns, popovers
+   - Estado vazio, estado de erro, estado de loading
+
+5. **Inventário de tema/densidade** — abra o tweaks panel e itere por cada combinação:
+   - light / dark / immersive
+   - compact / comfortable / spacious
+   - Screenshot de cada combinação numa mesma tela pra comparar
+
+6. **Anotação progressiva** — vá preenchendo este template à medida que explora. Não tenta fazer tudo de uma vez; volta ao template depois de cada descoberta:
+
+   ```
+   ## Mapa do design — m3a-design-reference
+
+   ### A. Telas/rotas (cada estado de tela é um item)
+   - [ ] /runs (lista) — trigger: estado inicial
+   - [ ] /runs/:id detalhe — trigger: clicar row
+   - [ ] /runs/:id review — trigger: botão "Revisar"
+   - [ ] /runs/:id workspace — trigger: ?
+   - [ ] /runs/new wizard step 1..N — trigger: botão "Disparar run"
+   - [ ] /medicos lista — trigger: nav header
+   - [ ] /medicos/:id detalhe — trigger: clicar card
+   - [ ] /biblioteca — trigger: nav header
+   - [ ] /ajustes — trigger: nav header
+   - [ ] (qualquer outra que descobrir)
+
+   ### B. Filtros e variações dentro de uma tela
+   - [ ] Lista runs por status: all / needs-review / running / approved / rework / draft
+   - [ ] Lista runs por médico: ?
+   - [ ] Workspace abas: revisar / chat / críticos / versões / histórico
+   - [ ] (descobrir mais)
+
+   ### C. Componentes condicionais
+   - [ ] Selection bubble: trigger ?
+   - [ ] Action log + undo: trigger ?
+   - [ ] Tweaks panel: trigger ?
+   - [ ] Pulse "running": tela ?
+   - [ ] (descobrir mais)
+
+   ### D. Tema e densidade
+   - [ ] light + comfortable
+   - [ ] dark + comfortable
+   - [ ] immersive + comfortable
+   - [ ] (cada combinação que decidir testar)
+
+   ### E. Achados não óbvios
+   - (anote aqui qualquer coisa que te surpreendeu, ex:
+     "MedicDetail tem 4 colunas, não 4 abas como eu imaginei")
+   ```
+
+7. **Saída da Etapa 0**: o template acima preenchido + uma pasta de screenshots organizada por tela. Mande pro Rodrigo antes de seguir. **Não comece a Etapa 1 até ele confirmar que o mapa parece completo** — ele pode te apontar áreas que você não cobriu.
+
+### Etapa 1 — Estude o código do protótipo e reconcile com o handoff
+
+Agora que você sabe **tudo** que tem no design, é hora de cruzar com o briefing.
+
+1. **Clone o repo do design** e leia (com o mapa da Etapa 0 do lado, pra associar arquivos a telas):
    - `styles.css` — paleta de cores em HEX, tokens semânticos, fontes, espaçamento
    - `ui.jsx` — primitives (Btn, Card, Pill, Score, Avatar)
    - `screens-1.jsx` — RunsList, RunDetail, ReviewScreen
@@ -142,8 +215,8 @@ npm run dev   # http://localhost:3000
    - `screens-3.jsx` — NewRun (wizard)
    - `data.jsx` — shape dos mocks (te dá ideia dos tipos)
    - `critic-panels.jsx` — paineis de crítico/síntese
-4. Compare com a estrutura do repo Next.js que você acabou de clonar (`app/`, `components/`)
-5. **Antes de escrever uma linha de código**, monte um relatório de reconciliação e mande pro Rodrigo. Estrutura:
+2. Compare com a estrutura do repo Next.js que você acabou de clonar (`app/`, `components/`)
+3. **Monte o relatório de reconciliação** e mande pro Rodrigo. Estrutura:
 
    ```
    ## Reconciliação design × handoff
@@ -186,7 +259,7 @@ Não copie cegamente do design — adapte pra Next.js + Tailwind v4 + Radix. Sug
 7. `/runs/new`
 8. `/biblioteca`, `/ajustes` (placeholders aceitáveis)
 
-**Lembrete**: antes de cada uma das telas marcadas, garanta que o ponto correspondente da seção 2 já foi reconciliado com o Rodrigo na Etapa 1. Se ainda tem dúvida pendente, **não implemente — pergunta primeiro**.
+**Lembrete**: antes de cada tela, garanta que (a) o mapa da Etapa 0 cobre todos os estados dela, e (b) o ponto correspondente da seção 2 já foi reconciliado com o Rodrigo na Etapa 1. Se ainda tem dúvida pendente em qualquer um dos dois, **não implementa — pergunta primeiro**.
 
 ### Etapa 5 — Mocks e API
 Monte `lib/types.ts`, `lib/mocks/` e `app/api/` do zero também. O design tem `data.jsx` com mocks que servem de inspiração pro shape, mas reescreva com tipos TS strict.
@@ -278,7 +351,8 @@ Pra cada ponto da seção 2 que o Rodrigo confirmou que **deve ser preservado**,
 
 Abra PR `feat/redesign-v2 → main`. No corpo do PR:
 - Lista de rotas implementadas com link
-- Link/cópia do relatório de reconciliação (Etapa 1) com as decisões do Rodrigo registradas
+- Link/cópia do **mapa da Etapa 0** (inventário do design)
+- Link/cópia do **relatório de reconciliação** (Etapa 1) com as decisões do Rodrigo registradas
 - Screenshots comparativos (design vs implementado) das 3 rotas principais
 - Resultado do `npm run build` (sem erros) e dos `curl` por rota
 - Checklist do que foi explicitamente preservado, substituído e descartado por decisão dele
